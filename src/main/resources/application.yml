@@ -1,0 +1,13 @@
+spring:
+  mail:
+    host: smtp.163.com #SMTP服务器地址
+    username: handedinmail@163.com #登陆账号
+    password: CEQVDJCVHQIVGTTY #登陆密码（或授权码）
+    from: handedinmail@163.com #邮件发信人（即真实邮箱）
+
+
+
+  servlet:
+    multipart:
+      max-file-size: 2MB #限制单个文件大小
+      max-request-size: 10MB #限制请求总量

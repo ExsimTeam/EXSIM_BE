@@ -1,0 +1,182 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.exsim_be.dao.FileDao">
+
+    <resultMap type="com.exsim_be.entity.File" id="FileMap">
+        <result property="id" column="id" jdbcType="INTEGER"/>
+        <result property="fileName" column="file_name" jdbcType="VARCHAR"/>
+        <result property="filePath" column="file_path" jdbcType="VARCHAR"/>
+        <result property="createdTime" column="created_time" jdbcType="TIMESTAMP"/>
+        <result property="lastModifyTime" column="last_modify_time" jdbcType="TIMESTAMP"/>
+        <result property="lastModifyUserId" column="last_modify_user_id" jdbcType="INTEGER"/>
+        <result property="createAuthorId" column="create_author_id" jdbcType="INTEGER"/>
+        <result property="description" column="description" jdbcType="VARCHAR"/>
+        <result property="property" column="property" jdbcType="INTEGER"/>
+    </resultMap>
+
+    <!--查询单个-->
+    <select id="queryById" resultMap="FileMap">
+        select id,
+               file_name,
+               file_path,
+               created_time,
+               last_modify_time,
+               last_modify_user_id,
+               create_author_id,
+               description,
+               property
+        from file
+        where id = #{id}
+    </select>
+
+    <!--查询指定行数据-->
+    <select id="queryAllByLimit" resultMap="FileMap">
+        select
+        id, file_name, file_path, created_time, last_modify_time, last_modify_user_id, create_author_id, description,
+        property
+        from file
+        <where>
+            <if test="id != null">
+                and id = #{id}
+            </if>
+            <if test="fileName != null and fileName != ''">
+                and file_name = #{fileName}
+            </if>
+            <if test="filePath != null and filePath != ''">
+                and file_path = #{filePath}
+            </if>
+            <if test="createdTime != null">
+                and created_time = #{createdTime}
+            </if>
+            <if test="lastModifyTime != null">
+                and last_modify_time = #{lastModifyTime}
+            </if>
+            <if test="lastModifyUserId != null">
+                and last_modify_user_id = #{lastModifyUserId}
+            </if>
+            <if test="createAuthorId != null">
+                and create_author_id = #{createAuthorId}
+            </if>
+            <if test="description != null and description != ''">
+                and description = #{description}
+            </if>
+            <if test="property != null">
+                and property = #{property}
+            </if>
+        </where>
+        limit #{pageable.offset}, #{pageable.pageSize}
+    </select>
+
+    <!--统计总行数-->
+    <select id="count" resultType="java.lang.Long">
+        select count(1)
+        from file
+        <where>
+            <if test="id != null">
+                and id = #{id}
+            </if>
+            <if test="fileName != null and fileName != ''">
+                and file_name = #{fileName}
+            </if>
+            <if test="filePath != null and filePath != ''">
+                and file_path = #{filePath}
+            </if>
+            <if test="createdTime != null">
+                and created_time = #{createdTime}
+            </if>
+            <if test="lastModifyTime != null">
+                and last_modify_time = #{lastModifyTime}
+            </if>
+            <if test="lastModifyUserId != null">
+                and last_modify_user_id = #{lastModifyUserId}
+            </if>
+            <if test="createAuthorId != null">
+                and create_author_id = #{createAuthorId}
+            </if>
+            <if test="description != null and description != ''">
+                and description = #{description}
+            </if>
+            <if test="property != null">
+                and property = #{property}
+            </if>
+        </where>
+    </select>
+
+    <!--新增所有列-->
+    <insert id="insert" keyProperty="id" useGeneratedKeys="true">
+        insert into file(file_name, file_path, created_time, last_modify_time, last_modify_user_id, create_author_id,
+                         description, property)
+        values (#{fileName}, #{filePath}, #{createdTime}, #{lastModifyTime}, #{lastModifyUserId}, #{createAuthorId},
+                #{description}, #{property})
+    </insert>
+
+    <insert id="insertBatch" keyProperty="id" useGeneratedKeys="true">
+        insert into file(file_name, file_path, created_time, last_modify_time, last_modify_user_id, create_author_id,
+        description, property)
+        values
+        <foreach collection="entities" item="entity" separator=",">
+            (#{entity.fileName}, #{entity.filePath}, #{entity.createdTime}, #{entity.lastModifyTime},
+            #{entity.lastModifyUserId}, #{entity.createAuthorId}, #{entity.description}, #{entity.property})
+        </foreach>
+    </insert>
+
+    <insert id="insertOrUpdateBatch" keyProperty="id" useGeneratedKeys="true">
+        insert into file(file_name, file_path, created_time, last_modify_time, last_modify_user_id, create_author_id,
+        description, property)
+        values
+        <foreach collection="entities" item="entity" separator=",">
+            (#{entity.fileName}, #{entity.filePath}, #{entity.createdTime}, #{entity.lastModifyTime},
+            #{entity.lastModifyUserId}, #{entity.createAuthorId}, #{entity.description}, #{entity.property})
+        </foreach>
+        on duplicate key update
+        file_name = values(file_name),
+        file_path = values(file_path),
+        created_time = values(created_time),
+        last_modify_time = values(last_modify_time),
+        last_modify_user_id = values(last_modify_user_id),
+        create_author_id = values(create_author_id),
+        description = values(description),
+        property = values(property)
+    </insert>
+
+    <!--通过主键修改数据-->
+    <update id="update">
+        update file
+        <set>
+            <if test="fileName != null and fileName != ''">
+                file_name = #{fileName},
+            </if>
+            <if test="filePath != null and filePath != ''">
+                file_path = #{filePath},
+            </if>
+            <if test="createdTime != null">
+                created_time = #{createdTime},
+            </if>
+            <if test="lastModifyTime != null">
+                last_modify_time = #{lastModifyTime},
+            </if>
+            <if test="lastModifyUserId != null">
+                last_modify_user_id = #{lastModifyUserId},
+            </if>
+            <if test="createAuthorId != null">
+                create_author_id = #{createAuthorId},
+            </if>
+            <if test="description != null and description != ''">
+                description = #{description},
+            </if>
+            <if test="property != null">
+                property = #{property},
+            </if>
+        </set>
+        where id = #{id}
+    </update>
+
+    <!--通过主键删除-->
+    <delete id="deleteById">
+        delete
+        from file
+        where id = #{id}
+    </delete>
+
+</mapper>
+
