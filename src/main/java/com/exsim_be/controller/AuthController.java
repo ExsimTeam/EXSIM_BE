@@ -64,7 +64,7 @@ public class AuthController {
      * 发送验证码到邮箱，检查邮箱地址格式，无需关注邮箱地址是否成功发送
      *
      * @param email
-     * @return 100: incorrect email format
+     * @return  100: incorrect email format
      */
     @PostMapping("/sendVerify")
     public ResponseEntity<Result> sendVerify(String email) {
