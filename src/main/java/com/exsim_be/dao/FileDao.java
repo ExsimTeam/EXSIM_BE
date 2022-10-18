@@ -1,9 +1,12 @@
 package com.exsim_be.dao;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.exsim_be.entity.File;
+import com.exsim_be.vo.returnVo.FileRetVo;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
+import org.apache.ibatis.annotations.Select;
 import org.springframework.data.domain.Pageable;
 
 import java.util.List;
@@ -82,6 +85,13 @@ public interface FileDao extends BaseMapper<File> {
      * @return 影响行数
      */
     int deleteById(Long id);
+
+
+    @Select("SELECT f.id,f.file_name,f.created_time,f.last_modify_time,f.create_author_id as authorUserId,u.username as authorUsername,f.property " +
+            "from file f,file_permission fp,user u " +
+            "where f.id=fp.file_id and fp.user_id=u.id " +
+            "order by f.last_modify_time desc ")
+    List<FileRetVo> getFileListPage(Page page);
 
 }
 

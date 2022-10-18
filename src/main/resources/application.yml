@@ -4,6 +4,13 @@ spring:
     username: handedinmail@163.com #登陆账号
     password: CEQVDJCVHQIVGTTY #登陆密码（或授权码）
     from: handedinmail@163.com #邮件发信人（即真实邮箱）
+  data:
+    mongodb:
+      host: 127.0.0.1
+      port: 27017
+      database: EXSIM_file
+      username: admin
+      password: 123456
 
 
 
@@ -11,3 +18,5 @@ spring:
     multipart:
       max-file-size: 2MB #限制单个文件大小
       max-request-size: 10MB #限制请求总量
+
+

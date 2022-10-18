@@ -71,8 +71,8 @@ public class AuthServiceImpl implements AuthService {
         //reCaptcha
         //send mail
         String verifyCode=String.format("%06d",random.nextInt(1000000));
-        redisTemplate.opsForValue().set(verifyPrefix+email,verifyCode,10,TimeUnit.MINUTES);
         mailService.sendMail(email,verifyCode);
+        redisTemplate.opsForValue().set(verifyPrefix+email,verifyCode,10,TimeUnit.MINUTES);
     }
 
     @Override
@@ -93,6 +93,8 @@ public class AuthServiceImpl implements AuthService {
         newPassword=DigestUtils.md5Hex(newPassword+salt);
         user.setPassword(newPassword);
         userDao.updateById(user);
+        //delete verify in redis
+        redisTemplate.delete(verifyPrefix+email);
         return Result.succ(null);
     }
 
@@ -128,6 +130,8 @@ public class AuthServiceImpl implements AuthService {
         String redisToken=tokenPrefix+token;//存放在redis中的token
         redisTemplate.opsForValue().set(userTokenPrefix+user.getId(),redisToken,1,TimeUnit.DAYS);
         redisTemplate.opsForValue().set(redisToken, JSON.toJSONString(user),1, TimeUnit.DAYS);
+        //delete verify in redis
+        redisTemplate.delete(verifyPrefix+email);
         return Result.succ(new LoginRetVo(token,user.getUsername()));
     }
 

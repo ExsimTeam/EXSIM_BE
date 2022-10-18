@@ -3,7 +3,7 @@
 <mapper namespace="com.exsim_be.dao.FileDao">
 
     <resultMap type="com.exsim_be.entity.File" id="FileMap">
-        <result property="id" column="id" jdbcType="INTEGER"/>
+        <result property="id" column="id" jdbcType="BIGINT"/>
         <result property="fileName" column="file_name" jdbcType="VARCHAR"/>
         <result property="filePath" column="file_path" jdbcType="VARCHAR"/>
         <result property="createdTime" column="created_time" jdbcType="TIMESTAMP"/>
@@ -13,6 +13,7 @@
         <result property="description" column="description" jdbcType="VARCHAR"/>
         <result property="property" column="property" jdbcType="INTEGER"/>
     </resultMap>
+
 
     <!--查询单个-->
     <select id="queryById" resultMap="FileMap">
@@ -101,6 +102,8 @@
             </if>
         </where>
     </select>
+
+
 
     <!--新增所有列-->
     <insert id="insert" keyProperty="id" useGeneratedKeys="true">
