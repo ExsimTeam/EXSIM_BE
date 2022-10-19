@@ -1,6 +1,8 @@
 package com.exsim_be.dao;
 
+import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.exsim_be.entity.FilePermission;
+import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 import org.springframework.data.domain.Pageable;
 
@@ -12,7 +14,8 @@ import java.util.List;
  * @author makejava
  * @since 2022-10-12 14:56:46
  */
-public interface FilePermissionDao {
+@Mapper
+public interface FilePermissionDao extends BaseMapper<FilePermission> {
 
     /**
      * 通过ID查询单条数据

@@ -45,10 +45,10 @@ public class AuthServiceImpl implements AuthService {
         //reCaptcha
         //密码加密
         password= DigestUtils.md5Hex(password+salt);
-        //根据Email和passwor查询用户
+        //根据Email和password查询用户
         LambdaQueryWrapper<User> queryWrapper=new LambdaQueryWrapper<>();
         queryWrapper.eq(User::getEmail,email).eq(User::getPassword,password)
-                .select(User::getId,User::getEmail,User::getUsername);
+                .select(User::getId,User::getEmail,User::getUsername).last("limit 1");
         User user=userDao.selectOne(queryWrapper);
         //null
         if(user==null){
@@ -80,7 +80,7 @@ public class AuthServiceImpl implements AuthService {
         //查询用户是否存在
         LambdaQueryWrapper<User> queryWrapper=new LambdaQueryWrapper<>();
         queryWrapper.eq(User::getEmail,email)
-                .select(User::getId);
+                .select(User::getId).last("limit 1");
         User user=userDao.selectOne(queryWrapper);
         if(user==null){
             return Result.fail(101,"no user");
@@ -107,7 +107,7 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public Result register(String username, String email, String password, String verify) {
         LambdaQueryWrapper<User> queryWrapper=new LambdaQueryWrapper<>();
-        queryWrapper.eq(User::getEmail,email).select(User::getId);
+        queryWrapper.eq(User::getEmail,email).select(User::getId).last("limit 1");
         User user=userDao.selectOne(queryWrapper);
         //has registered
         if(user!=null){

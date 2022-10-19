@@ -14,7 +14,7 @@ public class FormatCheck {
 
     private static final String REG_MAIL = "^[a-zA-Z0-9_!#$%&’*+/=?`{|}~^.-]+@[a-zA-Z0-9.-]+$";
 
-    private static final String REG_USERNAME="^[a-zA-Z0-9_\\u4e00-\\u9fa5]+$";
+    private static final String REG_USERNAME="/^[a-zA-Z0-9_\\u4e00-\\u9fa5]{1,20}$/";
 
     public static boolean checkMail(String email) {
         if (StringUtils.isBlank(email)) {
@@ -24,7 +24,7 @@ public class FormatCheck {
     }
 
     public static boolean checkUsername(String username) {
-        if(StringUtils.isBlank(username)||username.length()>99){
+        if(StringUtils.isBlank(username)||username.length()>20){
             return false;
         }
         return username.matches(REG_USERNAME);
