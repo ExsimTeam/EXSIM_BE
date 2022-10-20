@@ -72,13 +72,16 @@ public class FileController {
             return ResponseEntity.ok(Result.fail(100,"file doesn't exit!"));
         }
         User user=UserThreadLocal.get();
-        if(user.getId()!=file.getCreateAuthorId()){
+        if(!user.getId().equals(file.getCreateAuthorId())){
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
         }
         //share file
         return ResponseEntity.ok(fileService
                 .shareFile(shareFileParam.getShareToEmail(),shareFileParam.getFileId(),shareFileParam.getPermission()));
     }
+
+
+
 
 
 

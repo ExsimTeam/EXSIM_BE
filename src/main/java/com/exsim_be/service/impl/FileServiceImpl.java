@@ -1,12 +1,9 @@
 package com.exsim_be.service.impl;
 
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.TypeReference;
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.exsim_be.dao.FileBodyDao;
 import com.exsim_be.dao.FileDao;
-import com.exsim_be.dao.FilePermissionDao;
 import com.exsim_be.entity.File;
 import com.exsim_be.entity.User;
 import com.exsim_be.service.FilePermissionService;
@@ -24,7 +21,7 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
-import java.util.List;
+
 
 /**
  * @author 贾楠
@@ -39,6 +36,9 @@ public class FileServiceImpl extends ServiceImpl<FileDao, File> implements FileS
     FileDao fileDao;
     @Autowired
     FilePermissionService filePermissionService;
+
+    @Autowired
+    FileBodyDao fileBodyDao;
 
     @Autowired
     UserService userService;
@@ -70,7 +70,6 @@ public class FileServiceImpl extends ServiceImpl<FileDao, File> implements FileS
         newFile.setLastModifyUserId(user.getId());
         fileDao.insert(newFile);
         filePermissionService.addPermission(user.getId(),newFile.getId(),1);
-        //mongodb add new collection
     }
 
     @Override

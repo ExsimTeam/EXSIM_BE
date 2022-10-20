@@ -6,6 +6,7 @@ import com.exsim_be.dao.UserDao;
 import com.exsim_be.entity.User;
 import com.exsim_be.service.AuthService;
 import com.exsim_be.service.MailService;
+import com.exsim_be.service.ThreadService;
 import com.exsim_be.utils.JWTUtils;
 import com.exsim_be.vo.returnVo.LoginRetVo;
 import com.exsim_be.vo.returnVo.Result;
@@ -30,7 +31,7 @@ public class AuthServiceImpl implements AuthService {
     UserDao userDao;
 
     @Autowired
-    MailService mailService;
+    ThreadService threadService;
     @Autowired
     RedisTemplate<String,String> redisTemplate;
 
@@ -71,8 +72,8 @@ public class AuthServiceImpl implements AuthService {
         //reCaptcha
         //send mail
         String verifyCode=String.format("%06d",random.nextInt(1000000));
-        mailService.sendMail(email,verifyCode);
-        redisTemplate.opsForValue().set(verifyPrefix+email,verifyCode,10,TimeUnit.MINUTES);
+        threadService.sendEmail(email,verifyCode);
+        redisTemplate.opsForValue().set(verifyPrefix+email,verifyCode,10, TimeUnit.MINUTES);
     }
 
     @Override

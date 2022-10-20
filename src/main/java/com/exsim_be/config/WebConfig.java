@@ -2,7 +2,9 @@ package com.exsim_be.config;
 
 import com.exsim_be.interceptor.LoginInterceptor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
@@ -15,6 +17,16 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 public class WebConfig implements WebMvcConfigurer {
     @Autowired
     LoginInterceptor loginInterceptor;
+
+    @Value("${server.port}")
+    private String port;
+
+    @Override
+    public void addCorsMappings(CorsRegistry registry) {
+        String origin="http://localhost:"+port;//跨域配置
+        registry.addMapping("/**").allowedOrigins(origin);
+    }
+
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
         registry.addInterceptor(loginInterceptor).addPathPatterns("/**/user/**","/**/auth/logout","/**/file/**");
