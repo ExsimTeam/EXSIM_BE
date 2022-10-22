@@ -1,26 +1,33 @@
 package com.exsim_be.service.impl;
 
+import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.exsim_be.dao.FileBodyDao;
 import com.exsim_be.dao.FileDao;
 import com.exsim_be.entity.File;
+import com.exsim_be.entity.FilePermission;
 import com.exsim_be.entity.User;
 import com.exsim_be.service.FilePermissionService;
 import com.exsim_be.service.FileService;
 
 import com.exsim_be.service.UserService;
 import com.exsim_be.utils.UserThreadLocal;
+import com.exsim_be.vo.FilePermissionVo;
 import com.exsim_be.vo.paramVo.NewFileParam;
 import com.exsim_be.vo.returnVo.FileListVo;
 import com.exsim_be.vo.returnVo.FileRetVo;
 import com.exsim_be.vo.returnVo.Result;
+import com.exsim_be.vo.returnVo.ShareFileRetVo;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
+
+import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
 
 /**
@@ -58,7 +65,7 @@ public class FileServiceImpl extends ServiceImpl<FileDao, File> implements FileS
     }
 
     @Override
-    public void addNewFile(NewFileParam newFileParam) {
+    public long addNewFile(NewFileParam newFileParam) {
         User user= UserThreadLocal.get();
         File newFile=new File();
         newFile.setFileName(newFileParam.getFileName());
@@ -70,6 +77,7 @@ public class FileServiceImpl extends ServiceImpl<FileDao, File> implements FileS
         newFile.setLastModifyUserId(user.getId());
         fileDao.insert(newFile);
         filePermissionService.addPermission(user.getId(),newFile.getId(),1);
+        return newFile.getId();
     }
 
     @Override
@@ -80,13 +88,14 @@ public class FileServiceImpl extends ServiceImpl<FileDao, File> implements FileS
             fileDao.deleteById(fileId);
             filePermissionService.deleteBatchByFileId(fileId);
             //delete file in mongodb and redis
+            fileBodyDao.deleteFile(fileId);
         }else {
             filePermissionService.delete(user.getId(), fileId);
         }
     }
 
     @Override
-    public File getFile(Long fileId) {
+    public File getFile(long fileId) {
         return fileDao.queryById(fileId);
     }
 
@@ -97,6 +106,21 @@ public class FileServiceImpl extends ServiceImpl<FileDao, File> implements FileS
             return Result.fail(101,"user doesn't exist!");
         }
         filePermissionService.addPermission(shareToUser.getId(),fileId,permission);
-        return Result.succ(shareToUser.getUsername());
+        return Result.succ(new ShareFileRetVo(shareToUser.getUsername()));
     }
+
+    @Override
+    public FilePermission getPermisson(long id, long fileId) {
+        return filePermissionService.getPermission(id,fileId);
+    }
+
+
+    @Override
+    public String openFile(FilePermissionVo filePermissionVo) {
+        String utoken= UUID.randomUUID().toString();
+        redisTemplate.opsForValue().set(utoken, JSON.toJSONString(filePermissionVo),3, TimeUnit.MINUTES);
+        return utoken;
+    }
+
+
 }

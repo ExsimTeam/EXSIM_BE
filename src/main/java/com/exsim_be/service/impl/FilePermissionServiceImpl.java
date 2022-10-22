@@ -51,5 +51,15 @@ public class FilePermissionServiceImpl implements FilePermissionService {
         filePermissionDao.delete(queryWrapper);
     }
 
+    @Override
+    public FilePermission getPermission(long userId, long FileId) {
+        LambdaQueryWrapper<FilePermission> queryWrapper=new LambdaQueryWrapper<>();
+        queryWrapper.eq(FilePermission::getUserId,userId).eq(FilePermission::getFileId,FileId)
+                .select(FilePermission::getId, FilePermission::getPermission)
+                .last("limit 1");
+        FilePermission filePermission = filePermissionDao.selectOne(queryWrapper);
+        return filePermission;
+    }
+
 
 }

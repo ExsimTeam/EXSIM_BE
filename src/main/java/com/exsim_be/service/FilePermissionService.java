@@ -1,5 +1,7 @@
 package com.exsim_be.service;
 
+import com.exsim_be.entity.FilePermission;
+
 /**
  * @author 贾楠
  * @version 1.0
@@ -11,5 +13,7 @@ public interface FilePermissionService {
     void delete(long userId, long fileId);
 
     void deleteBatchByFileId(long fileId);
+
+    FilePermission getPermission(long userId, long FileId);
 
 }

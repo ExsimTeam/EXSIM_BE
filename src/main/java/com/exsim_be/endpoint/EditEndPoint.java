@@ -1,6 +1,9 @@
 package com.exsim_be.endpoint;
 
+import com.alibaba.fastjson.JSON;
 import com.exsim_be.entity.User;
+import com.exsim_be.vo.FilePermissionVo;
+import com.exsim_be.vo.returnVo.MessageVo;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -11,6 +14,7 @@ import javax.websocket.*;
 import javax.websocket.server.PathParam;
 import javax.websocket.server.ServerEndpoint;
 import java.io.IOException;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -26,20 +30,29 @@ import java.util.concurrent.ConcurrentHashMap;
 @ServerEndpoint("/edit")
 public class EditEndPoint {
     @Autowired
-    RedisTemplate redisTemplate;
+    RedisTemplate<String,String> redisTemplate;
 
-    private static Map<Long,Set<EditEndPoint>> fileSessions=new ConcurrentHashMap<>();
+    private static final Map<Long,Set<Session>> fileSessions=new ConcurrentHashMap<>();
 
-    private Session session;
-    private User user;
-    private Long fileId;
+    private FilePermissionVo filePermissionVo;
+    private Set<Session> sessionSet;
 
     @OnOpen()
     public void onOpen(Session session){
 
         Map<String, List<String>> requestParameterMap = session.getRequestParameterMap();
         String utoken=requestParameterMap.get("utoken").get(0);
-        log.info("用户utoken:{} connected",utoken);
+        String filePermissonVoJson=redisTemplate.opsForValue().get(utoken);
+        if(filePermissonVoJson==null){
+            session.getAsyncRemote().sendText("fail to establish connection!");
+            onClose(session);
+            return;
+        }
+        this.filePermissionVo= JSON.parseObject(filePermissonVoJson,FilePermissionVo.class);
+        fileSessions.putIfAbsent(filePermissionVo.getFileId(), new HashSet<>());
+        sessionSet=fileSessions.get(filePermissionVo.getFileId());
+        sessionSet.add(session);
+        session.getAsyncRemote().sendText("connect success!");
     }
 
     @OnClose
@@ -47,6 +60,10 @@ public class EditEndPoint {
         try {
             //关闭WebSocket下的该Seesion会话
             session.close();
+            sessionSet.remove(session);
+            if(sessionSet.size()==0){
+                fileSessions.remove(filePermissionVo.getFileId());
+            }
             log.info("断开连接力");
         } catch (IOException e) {
             e.printStackTrace();
@@ -56,8 +73,19 @@ public class EditEndPoint {
 
     @OnMessage
     public void onMessage(Session session,String message){
-        log.info("消息:{}",message);
-        session.getAsyncRemote().sendText("收到消息力");
+        if(filePermissionVo.getPermission()==0){
+            session.getAsyncRemote().sendText("no authorization to write");
+            return;
+        }
+        //message check
+
+        //send message to other member
+        MessageVo messageVo=new MessageVo(message, filePermissionVo.getUsername());
+        for(Session partner:sessionSet){
+            partner.getAsyncRemote().sendObject(messageVo);
+        }
+        //后台保存
+
     }
 
     @OnError

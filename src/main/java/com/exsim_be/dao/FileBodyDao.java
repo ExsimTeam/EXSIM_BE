@@ -1,17 +1,12 @@
 package com.exsim_be.dao;
 
 import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONObject;
-import com.exsim_be.entity.fileBody.Cell;
-import org.bson.json.JsonObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Component;
-
-import java.text.CollationElementIterator;
 import java.util.List;
 
 /**
@@ -43,9 +38,13 @@ public class FileBodyDao {
         return jsonObjects;
     }
 
-    public void deleteFile(int fileId){
+    public void deleteFile(long fileId){
         String collectionName="F"+fileId;
         mongoTemplate.dropCollection(collectionName);
+    }
+
+    public void addSheet(String sheetName){
+
     }
 
 
