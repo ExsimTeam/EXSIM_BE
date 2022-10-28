@@ -15,10 +15,7 @@ import com.exsim_be.service.UserService;
 import com.exsim_be.utils.UserThreadLocal;
 import com.exsim_be.vo.FilePermissionVo;
 import com.exsim_be.vo.paramVo.NewFileParam;
-import com.exsim_be.vo.returnVo.FileListVo;
-import com.exsim_be.vo.returnVo.FileRetVo;
-import com.exsim_be.vo.returnVo.Result;
-import com.exsim_be.vo.returnVo.ShareFileRetVo;
+import com.exsim_be.vo.returnVo.*;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import org.springframework.data.redis.core.RedisTemplate;
@@ -26,6 +23,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.Date;
 
+import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
@@ -77,6 +75,7 @@ public class FileServiceImpl extends ServiceImpl<FileDao, File> implements FileS
         newFile.setLastModifyUserId(user.getId());
         fileDao.insert(newFile);
         filePermissionService.addPermission(user.getId(),newFile.getId(),1);
+        fileBodyDao.addNewFile(newFile.getId());
         return newFile.getId();
     }
 
@@ -118,9 +117,13 @@ public class FileServiceImpl extends ServiceImpl<FileDao, File> implements FileS
     @Override
     public String openFile(FilePermissionVo filePermissionVo) {
         String utoken= UUID.randomUUID().toString();
-        redisTemplate.opsForValue().set(utoken, JSON.toJSONString(filePermissionVo),3, TimeUnit.MINUTES);
+        redisTemplate.opsForValue().set("UTOKEN:"+utoken, JSON.toJSONString(filePermissionVo),3, TimeUnit.MINUTES);
         return utoken;
     }
 
-
+    @Override
+    public GetFileBodyRetVo getFileBody(long fileId,int sheetId, int page) {
+        List<Object> objects = fileBodyDao.queryCell(fileId, sheetId, page);
+        return new GetFileBodyRetVo(objects);
+    }
 }

@@ -1,6 +1,5 @@
 package com.exsim_be.vo;
 
-import com.exsim_be.entity.FilePermission;
 import lombok.Data;
 
 /**
@@ -23,12 +22,6 @@ public class FilePermissionVo {
     public FilePermissionVo() {
     }
 
-    public FilePermissionVo(String username, FilePermission filePermission) {
-        this.username = username;
-        this.fileId=filePermission.getFileId();
-        this.userId=filePermission.getUserId();
-        this.permission=filePermission.getPermission();
-    }
 
     public FilePermissionVo(long userId, String username, long fileId, Integer permission) {
         this.userId = userId;

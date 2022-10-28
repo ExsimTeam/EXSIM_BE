@@ -6,7 +6,6 @@ import com.exsim_be.utils.FormatCheck;
 import com.exsim_be.utils.UserThreadLocal;
 import com.exsim_be.vo.enumVo.GlobalCodeEnum;
 import com.exsim_be.vo.returnVo.Result;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;

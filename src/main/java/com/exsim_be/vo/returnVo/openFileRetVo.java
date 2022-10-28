@@ -10,9 +10,11 @@ import lombok.Data;
 @Data
 public class openFileRetVo {
     private String utoken;
+    private FileInfoVo fileInfoVo;
 
-    public openFileRetVo(String utoken) {
+    public openFileRetVo(String utoken, FileInfoVo fileInfoVo) {
         this.utoken = utoken;
+        this.fileInfoVo = fileInfoVo;
     }
 
     public openFileRetVo() {

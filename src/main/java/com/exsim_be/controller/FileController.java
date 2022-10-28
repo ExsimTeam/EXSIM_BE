@@ -1,6 +1,7 @@
 package com.exsim_be.controller;
 
 
+import com.exsim_be.dao.FileBodyDao;
 import com.exsim_be.entity.File;
 import com.exsim_be.entity.FilePermission;
 import com.exsim_be.entity.User;
@@ -9,10 +10,7 @@ import com.exsim_be.utils.UserThreadLocal;
 import com.exsim_be.vo.FilePermissionVo;
 import com.exsim_be.vo.paramVo.NewFileParam;
 import com.exsim_be.vo.paramVo.ShareFileParam;
-import com.exsim_be.vo.returnVo.FileListVo;
-import com.exsim_be.vo.returnVo.Result;
-import com.exsim_be.vo.returnVo.NewFileRetVo;
-import com.exsim_be.vo.returnVo.openFileRetVo;
+import com.exsim_be.vo.returnVo.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -30,6 +28,9 @@ import org.springframework.web.bind.annotation.*;
 public class FileController {
     @Autowired
     FileService fileService;
+
+    @Autowired
+    FileBodyDao fileBodyDao;
 
     private static final String uTokenPrefix="UTOKEN:";
 
@@ -83,7 +84,8 @@ public class FileController {
                 .shareFile(shareFileParam.getShareToEmail(),shareFileParam.getFileId(),shareFileParam.getPermission()));
     }
 
-    @PostMapping ResponseEntity<Result> openFile(Long fileId){
+    @GetMapping("/openFile")
+    ResponseEntity<Result> openFile(@RequestParam("fileId") Long fileId){
         if(fileId==null){
             return ResponseEntity.badRequest().body(null);
         }
@@ -97,25 +99,29 @@ public class FileController {
         FilePermissionVo filePermissionVo;
         if(filePermission==null){
             if(file.getProperty()==0){
-                return ResponseEntity.badRequest().body(null);
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
             }
             filePermissionVo =new FilePermissionVo(user.getId(),user.getUsername(),fileId,0);
         }else {
-            filePermissionVo =new FilePermissionVo(user.getUsername(),filePermission);
+            filePermissionVo =new FilePermissionVo(user.getId(), user.getUsername(),fileId, filePermission.getPermission());
         }
         String utoken=fileService.openFile(filePermissionVo);
-        return ResponseEntity.ok(Result.succ(new openFileRetVo(utoken)));
+        FileInfoVo fileInfoVo=fileBodyDao.getFileInfo(fileId);
+        return ResponseEntity.ok(Result.succ(new openFileRetVo(utoken,fileInfoVo)));
     }
 
 
-
-
-
-
-
-
-
-
+    @GetMapping("/getFileBody")
+    ResponseEntity<Result> getFileBody(@RequestParam("fileId")Long fileId
+            ,@RequestParam("page") Integer page
+    ,@RequestParam("sheetId")int sheetId){
+        if(fileId==null||page==null){
+            return ResponseEntity.badRequest().body(null);
+        }
+        //check authorization
+        GetFileBodyRetVo fileBody = fileService.getFileBody(fileId, sheetId, page);
+        return ResponseEntity.ok(Result.succ(fileBody));
+    }
 
 
 }

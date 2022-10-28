@@ -7,7 +7,9 @@ package com.exsim_be.vo.enumVo;
  */
 public enum GlobalCodeEnum {
     SUCCESS(1,"success"),
-    PARAMS_ERROR(2,"params error");
+    PARAMS_ERROR(2,"params error"),
+    BAD_REQUEST(400,"bad request"),
+    UNAUTHORIZED(401,"unauthorized");
     private int code;
     private String msg;
 

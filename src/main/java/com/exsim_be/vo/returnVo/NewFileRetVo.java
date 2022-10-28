@@ -16,5 +16,6 @@ public class NewFileRetVo {
     }
 
     public NewFileRetVo() {
+
     }
 }
