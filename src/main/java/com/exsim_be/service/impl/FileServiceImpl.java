@@ -1,6 +1,7 @@
 package com.exsim_be.service.impl;
 
 import com.alibaba.fastjson.JSON;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.exsim_be.dao.FileBodyDao;
 import com.exsim_be.dao.FileDao;
@@ -94,13 +95,13 @@ public class FileServiceImpl extends ServiceImpl<FileDao, File> implements FileS
     }
 
     @Override
-    public ResponseResult shareFile(String shareToEmail, long fileId, int permission) {
+    public Result shareFile(String shareToEmail, long fileId,int permission) {
         User shareToUser=userService.getUserByEmail(shareToEmail);
         if(shareToUser==null){
-            return ResponseResult.fail(101,"user doesn't exist!");
+            return Result.fail(101,"user doesn't exist!");
         }
         filePermissionService.addPermission(shareToUser.getId(),fileId,permission);
-        return ResponseResult.succ(new ShareFileRetVo(shareToUser.getUsername()));
+        return Result.succ(new ShareFileRetVo(shareToUser.getUsername()));
     }
 
     @Override

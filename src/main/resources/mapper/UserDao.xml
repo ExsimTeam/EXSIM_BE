@@ -3,11 +3,11 @@
 <mapper namespace="com.exsim_be.dao.UserDao">
 
     <resultMap type="com.exsim_be.entity.User" id="UserMap">
-        <responseResult property="id" column="id" jdbcType="INTEGER"/>
-        <responseResult property="username" column="username" jdbcType="VARCHAR"/>
-        <responseResult property="password" column="password" jdbcType="VARCHAR"/>
-        <responseResult property="email" column="email" jdbcType="VARCHAR"/>
-        <responseResult property="status" column="status" jdbcType="INTEGER"/>
+        <result property="id" column="id" jdbcType="INTEGER"/>
+        <result property="username" column="username" jdbcType="VARCHAR"/>
+        <result property="password" column="password" jdbcType="VARCHAR"/>
+        <result property="email" column="email" jdbcType="VARCHAR"/>
+        <result property="status" column="status" jdbcType="INTEGER"/>
     </resultMap>
 
     <!--查询单个-->

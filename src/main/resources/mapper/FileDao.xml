@@ -3,15 +3,15 @@
 <mapper namespace="com.exsim_be.dao.FileDao">
 
     <resultMap type="com.exsim_be.entity.File" id="FileMap">
-        <responseResult property="id" column="id" jdbcType="BIGINT"/>
-        <responseResult property="fileName" column="file_name" jdbcType="VARCHAR"/>
-        <responseResult property="filePath" column="file_path" jdbcType="VARCHAR"/>
-        <responseResult property="createdTime" column="created_time" jdbcType="TIMESTAMP"/>
-        <responseResult property="lastModifyTime" column="last_modify_time" jdbcType="TIMESTAMP"/>
-        <responseResult property="lastModifyUserId" column="last_modify_user_id" jdbcType="INTEGER"/>
-        <responseResult property="createAuthorId" column="create_author_id" jdbcType="INTEGER"/>
-        <responseResult property="description" column="description" jdbcType="VARCHAR"/>
-        <responseResult property="property" column="property" jdbcType="INTEGER"/>
+        <result property="id" column="id" jdbcType="BIGINT"/>
+        <result property="fileName" column="file_name" jdbcType="VARCHAR"/>
+        <result property="filePath" column="file_path" jdbcType="VARCHAR"/>
+        <result property="createdTime" column="created_time" jdbcType="TIMESTAMP"/>
+        <result property="lastModifyTime" column="last_modify_time" jdbcType="TIMESTAMP"/>
+        <result property="lastModifyUserId" column="last_modify_user_id" jdbcType="INTEGER"/>
+        <result property="createAuthorId" column="create_author_id" jdbcType="INTEGER"/>
+        <result property="description" column="description" jdbcType="VARCHAR"/>
+        <result property="property" column="property" jdbcType="INTEGER"/>
     </resultMap>
 
 

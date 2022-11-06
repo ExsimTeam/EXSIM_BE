@@ -6,7 +6,7 @@ import com.exsim_be.vo.enumVo.GlobalCodeEnum;
 import com.exsim_be.vo.paramVo.LoginParam;
 import com.exsim_be.vo.paramVo.RegisterParam;
 import com.exsim_be.vo.paramVo.SetPasswordParam;
-import com.exsim_be.vo.returnVo.ResponseResult;
+import com.exsim_be.vo.returnVo.Result;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -27,14 +27,14 @@ public class AuthController {
      * @return 100:username or password incorrect
      */
     @PostMapping("/login")
-    public ResponseEntity<ResponseResult> login(LoginParam loginParam) {
+    public ResponseEntity<Result> login( LoginParam loginParam) {
         //检查参数合法性
         if (!loginParam.isLegal()) {
             return ResponseEntity.badRequest()
-                    .body(ResponseResult.fail(GlobalCodeEnum.PARAMS_ERROR.getCode(), GlobalCodeEnum.PARAMS_ERROR.getMsg()));
+                    .body(Result.fail(GlobalCodeEnum.PARAMS_ERROR.getCode(), GlobalCodeEnum.PARAMS_ERROR.getMsg()));
         }
-        ResponseResult responseResult = authService.login(loginParam.getEmail(), loginParam.getPassword());
-        return ResponseEntity.ok(responseResult);
+        Result result = authService.login(loginParam.getEmail(), loginParam.getPassword());
+        return ResponseEntity.ok(result);
     }
 
     /**
@@ -42,11 +42,11 @@ public class AuthController {
      * @return 100:user has already registered 101:wrong verification code
      */
     @PostMapping("/register")
-    public ResponseEntity<ResponseResult> register(RegisterParam registerParam) {
+    public ResponseEntity<Result> register(RegisterParam registerParam) {
         //check params
         if (!registerParam.isLegal()) {
             return ResponseEntity.badRequest()
-                    .body(ResponseResult.fail(GlobalCodeEnum.PARAMS_ERROR.getCode(), GlobalCodeEnum.PARAMS_ERROR.getMsg()));
+                    .body(Result.fail(GlobalCodeEnum.PARAMS_ERROR.getCode(), GlobalCodeEnum.PARAMS_ERROR.getMsg()));
         }
         return ResponseEntity.ok(
                 authService.register(registerParam.getUsername()
@@ -64,13 +64,13 @@ public class AuthController {
      * @return  100: incorrect email format
      */
     @PostMapping("/sendVerify")
-    public ResponseEntity<ResponseResult> sendVerify(String email) {
+    public ResponseEntity<Result> sendVerify(String email) {
         if(!FormatCheck.checkMail(email)){
             return ResponseEntity.badRequest()
-                    .body(ResponseResult.fail(GlobalCodeEnum.PARAMS_ERROR.getCode(), GlobalCodeEnum.PARAMS_ERROR.getMsg()));
+                    .body(Result.fail(GlobalCodeEnum.PARAMS_ERROR.getCode(), GlobalCodeEnum.PARAMS_ERROR.getMsg()));
         }
         authService.sendVerify(email);
-        return ResponseEntity.ok(ResponseResult.succ(null));
+        return ResponseEntity.ok(Result.succ(null));
     }
 
 
@@ -80,10 +80,10 @@ public class AuthController {
      * @return
      */
     @PostMapping("/resetPasswd")
-    public ResponseEntity<ResponseResult> resetPassword(SetPasswordParam setPasswordParam) {
+    public ResponseEntity<Result> resetPassword(SetPasswordParam setPasswordParam) {
         if(!setPasswordParam.isLegal()){
             return ResponseEntity.badRequest()
-                    .body(ResponseResult.fail(GlobalCodeEnum.PARAMS_ERROR.getCode(), GlobalCodeEnum.PARAMS_ERROR.getMsg()));
+                    .body(Result.fail(GlobalCodeEnum.PARAMS_ERROR.getCode(), GlobalCodeEnum.PARAMS_ERROR.getMsg()));
         }
 
         return ResponseEntity.ok(authService.setPassword(setPasswordParam.getEmail(), setPasswordParam.getPassword(), setPasswordParam.getVerify()));
@@ -91,7 +91,7 @@ public class AuthController {
 
 
     @PostMapping("/logout")
-    public ResponseEntity<ResponseResult> logout(@RequestHeader("token") String token) {
+    public ResponseEntity<Result> logout(@RequestHeader("token") String token) {
         return ResponseEntity.ok(authService.logout(token));
     }
 

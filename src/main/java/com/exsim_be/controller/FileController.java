@@ -35,42 +35,42 @@ public class FileController {
     private static final String uTokenPrefix="UTOKEN:";
 
     @GetMapping("/getFileList")
-    public ResponseEntity<ResponseResult> getFileList(){
+    public ResponseEntity<Result> getFileList(){
         User user= UserThreadLocal.get();
         FileListVo fileList = fileService.getFileList(user.getId());
-        return ResponseEntity.ok(ResponseResult.succ(fileList));
+        return ResponseEntity.ok(Result.succ(fileList));
     }
 
 
 
     @PostMapping("/newFile")
-    public ResponseEntity<ResponseResult> newFile(NewFileParam newFileParam){
+    public ResponseEntity<Result> newFile(NewFileParam newFileParam){
         if(!newFileParam.isLegal()){
             return ResponseEntity.badRequest().body(null);
         }
         long fileId=fileService.addNewFile(newFileParam);
-        return ResponseEntity.ok(ResponseResult.succ(new NewFileRetVo(fileId)));
+        return ResponseEntity.ok(Result.succ(new NewFileRetVo(fileId)));
     }
 
 
     @PostMapping("/deleteFile")
-    public ResponseEntity<ResponseResult> deleteFile(Long fileId){
+    public ResponseEntity<Result> deleteFile(Long fileId){
         if(fileId==null){
             return ResponseEntity.badRequest().body(null);
         }
         fileService.deleteFile(fileId);
-        return ResponseEntity.ok(ResponseResult.succ(null));
+        return ResponseEntity.ok(Result.succ(null));
     }
 
     @PostMapping("/shareFile")
-    public ResponseEntity<ResponseResult> shareFile(ShareFileParam shareFileParam){
+    public ResponseEntity<Result> shareFile(ShareFileParam shareFileParam){
         if(!shareFileParam.isLegal()){
             return ResponseEntity.badRequest().body(null);
         }
         //check authorization
         File file= fileService.getFile(shareFileParam.getFileId());
         if(file==null){
-            return ResponseEntity.ok(ResponseResult.fail(100,"file doesn't exit!"));
+            return ResponseEntity.ok(Result.fail(100,"file doesn't exit!"));
         }
         User user=UserThreadLocal.get();
         if(!user.getId().equals(file.getCreateAuthorId())){
@@ -82,14 +82,14 @@ public class FileController {
     }
 
     @GetMapping("/openFile")
-    ResponseEntity<ResponseResult> openFile(@RequestParam("fileId") Long fileId){
+    ResponseEntity<Result> openFile(@RequestParam("fileId") Long fileId){
         if(fileId==null){
             return ResponseEntity.badRequest().body(null);
         }
         User user=UserThreadLocal.get();
         File file=fileService.getFile(fileId);
         if(file==null){
-            return ResponseEntity.ok(ResponseResult.fail(100,"file doesn't exit!"));
+            return ResponseEntity.ok(Result.fail(100,"file doesn't exit!"));
         }
         //check authorization
         FilePermission filePermission = fileService.getPermisson(user.getId(), fileId);
@@ -104,20 +104,20 @@ public class FileController {
         }
         String utoken=fileService.openFile(filePermissionVo);
         FileInfoVo fileInfoVo=fileBodyDao.getFileInfo(fileId);
-        return ResponseEntity.ok(ResponseResult.succ(new openFileRetVo(utoken,fileInfoVo)));
+        return ResponseEntity.ok(Result.succ(new openFileRetVo(utoken,fileInfoVo)));
     }
 
 
     @GetMapping("/getFileBody")
-    ResponseEntity<ResponseResult> getFileBody(@RequestParam("fileId")Long fileId
-            , @RequestParam("page") Integer page
-    , @RequestParam("sheetId")int sheetId){
+    ResponseEntity<Result> getFileBody(@RequestParam("fileId")Long fileId
+            ,@RequestParam("page") Integer page
+    ,@RequestParam("sheetId")int sheetId){
         if(fileId==null||page==null){
             return ResponseEntity.badRequest().body(null);
         }
         //check authorization
         GetFileBodyRetVo fileBody = fileService.getFileBody(fileId, sheetId, page);
-        return ResponseEntity.ok(ResponseResult.succ(fileBody));
+        return ResponseEntity.ok(Result.succ(fileBody));
     }
 
 

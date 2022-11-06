@@ -8,7 +8,7 @@ import com.exsim_be.vo.FilePermissionVo;
 import com.exsim_be.vo.paramVo.NewFileParam;
 import com.exsim_be.vo.returnVo.FileListVo;
 import com.exsim_be.vo.returnVo.GetFileBodyRetVo;
-import com.exsim_be.vo.returnVo.ResponseResult;
+import com.exsim_be.vo.returnVo.Result;
 
 /**
  * (File)表服务接口
@@ -27,7 +27,7 @@ public interface FileService extends IService<File> {
 
     File getFile(long fileId);
 
-    ResponseResult shareFile(String shareToEmail, long fileId, int permission);
+    Result shareFile(String shareToEmail, long fileId, int permission);
 
     FilePermission getPermisson(long id, long fileId);
 
