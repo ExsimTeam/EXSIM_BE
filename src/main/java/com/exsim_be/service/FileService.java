@@ -8,7 +8,7 @@ import com.exsim_be.vo.FilePermissionVo;
 import com.exsim_be.vo.paramVo.NewFileParam;
 import com.exsim_be.vo.returnVo.FileListVo;
 import com.exsim_be.vo.returnVo.GetFileBodyRetVo;
-import com.exsim_be.vo.returnVo.Result;
+import com.exsim_be.vo.returnVo.ResponseResult;
 
 /**
  * (File)表服务接口
@@ -19,7 +19,7 @@ import com.exsim_be.vo.returnVo.Result;
 public interface FileService extends IService<File> {
 
 
-    FileListVo getFileList(long id, int page);
+    FileListVo getFileList(long userId);
 
     long addNewFile(NewFileParam newFileParam);
 
@@ -27,7 +27,7 @@ public interface FileService extends IService<File> {
 
     File getFile(long fileId);
 
-    Result shareFile(String shareToEmail, long fileId, int permission);
+    ResponseResult shareFile(String shareToEmail, long fileId, int permission);
 
     FilePermission getPermisson(long id, long fileId);
 

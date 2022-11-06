@@ -12,6 +12,4 @@ import java.util.List;
 public class FileListVo {
     private List<FileRetVo> files;
     private long total;
-    private long size;
-    private long current;
 }

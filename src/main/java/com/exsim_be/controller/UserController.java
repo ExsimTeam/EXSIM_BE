@@ -5,7 +5,7 @@ import com.exsim_be.service.UserService;
 import com.exsim_be.utils.FormatCheck;
 import com.exsim_be.utils.UserThreadLocal;
 import com.exsim_be.vo.enumVo.GlobalCodeEnum;
-import com.exsim_be.vo.returnVo.Result;
+import com.exsim_be.vo.returnVo.ResponseResult;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -25,14 +25,14 @@ public class UserController {
     UserService userService;
 
     @PostMapping("/updateProfile")
-    public ResponseEntity<Result> updateProfile(String newUsername){
+    public ResponseEntity<ResponseResult> updateProfile(String newUsername){
         if(FormatCheck.checkUsername(newUsername)){
             return ResponseEntity.badRequest()
-                    .body(Result.fail(GlobalCodeEnum.PARAMS_ERROR.getCode(),GlobalCodeEnum.PARAMS_ERROR.getMsg()));
+                    .body(ResponseResult.fail(GlobalCodeEnum.PARAMS_ERROR.getCode(),GlobalCodeEnum.PARAMS_ERROR.getMsg()));
         }
         User user= UserThreadLocal.get();
         user.setUsername(newUsername);
         userService.updateUsername(user);
-        return ResponseEntity.ok(Result.succ(null));
+        return ResponseEntity.ok(ResponseResult.succ(null));
     }
 }

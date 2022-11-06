@@ -1,10 +1,8 @@
 package com.exsim_be.interceptor;
 
-import com.alibaba.fastjson.JSON;
 import com.exsim_be.entity.User;
 import com.exsim_be.service.AuthService;
 import com.exsim_be.utils.UserThreadLocal;
-import com.exsim_be.vo.returnVo.Result;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;

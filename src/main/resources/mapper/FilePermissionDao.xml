@@ -3,11 +3,11 @@
 <mapper namespace="com.exsim_be.dao.FilePermissionDao">
 
     <resultMap type="com.exsim_be.entity.FilePermission" id="FilePermissionMap">
-        <result property="id" column="id" jdbcType="INTEGER"/>
-        <result property="userId" column="user_id" jdbcType="INTEGER"/>
-        <result property="fileId" column="file_id" jdbcType="INTEGER"/>
-        <result property="permission" column="permission" jdbcType="INTEGER"/>
-        <result property="lastOpenTime" column="last_open_time" jdbcType="TIMESTAMP"/>
+        <responseResult property="id" column="id" jdbcType="INTEGER"/>
+        <responseResult property="userId" column="user_id" jdbcType="INTEGER"/>
+        <responseResult property="fileId" column="file_id" jdbcType="INTEGER"/>
+        <responseResult property="permission" column="permission" jdbcType="INTEGER"/>
+        <responseResult property="lastOpenTime" column="last_open_time" jdbcType="TIMESTAMP"/>
     </resultMap>
 
     <!--查询单个-->

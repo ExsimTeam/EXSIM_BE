@@ -5,11 +5,10 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.exsim_be.dao.UserDao;
 import com.exsim_be.entity.User;
 import com.exsim_be.service.AuthService;
-import com.exsim_be.service.MailService;
 import com.exsim_be.service.ThreadService;
 import com.exsim_be.utils.JWTUtils;
 import com.exsim_be.vo.returnVo.LoginRetVo;
-import com.exsim_be.vo.returnVo.Result;
+import com.exsim_be.vo.returnVo.ResponseResult;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,7 +41,7 @@ public class AuthServiceImpl implements AuthService {
     private static final String salt="erkghierkgb";
     private static final Random random=new Random();
     @Override
-    public Result login(String email, String password) {
+    public ResponseResult login(String email, String password) {
         //reCaptcha
         //密码加密
         password= DigestUtils.md5Hex(password+salt);
@@ -53,7 +52,7 @@ public class AuthServiceImpl implements AuthService {
         User user=userDao.selectOne(queryWrapper);
         //null
         if(user==null){
-            return Result.fail(100,"username or password incorrect");
+            return ResponseResult.fail(100,"username or password incorrect");
         }
         //单点登录，如果redis中有ID对应的token则删除旧token
         String token= JWTUtils.createToken(user.getId());
@@ -64,7 +63,7 @@ public class AuthServiceImpl implements AuthService {
         }
         redisTemplate.opsForValue().set(userTokenPrefix+user.getId(),redisToken,1,TimeUnit.DAYS);
         redisTemplate.opsForValue().set(redisToken, JSON.toJSONString(user),1, TimeUnit.DAYS);
-        return Result.succ(new LoginRetVo(token,user.getUsername()));
+        return ResponseResult.succ(new LoginRetVo(token,user.getUsername()));
     }
 
     @Override
@@ -77,18 +76,18 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
-    public Result setPassword(String email, String newPassword, String verificationCode) {
+    public ResponseResult setPassword(String email, String newPassword, String verificationCode) {
         //查询用户是否存在
         LambdaQueryWrapper<User> queryWrapper=new LambdaQueryWrapper<>();
         queryWrapper.eq(User::getEmail,email)
                 .select(User::getId).last("limit 1");
         User user=userDao.selectOne(queryWrapper);
         if(user==null){
-            return Result.fail(101,"no user");
+            return ResponseResult.fail(101,"no user");
         }
         String redisVerify=redisTemplate.opsForValue().get(verifyPrefix+email);
         if(!verificationCode.equals(redisVerify)){
-            return Result.fail(100,"wrong verification code");
+            return ResponseResult.fail(100,"wrong verification code");
         }
         //update password
         newPassword=DigestUtils.md5Hex(newPassword+salt);
@@ -96,28 +95,28 @@ public class AuthServiceImpl implements AuthService {
         userDao.updateById(user);
         //delete verify in redis
         redisTemplate.delete(verifyPrefix+email);
-        return Result.succ(null);
+        return ResponseResult.succ(null);
     }
 
     @Override
-    public Result logout(String token) {
+    public ResponseResult logout(String token) {
         redisTemplate.delete(tokenPrefix+token);
-        return Result.succ(null);
+        return ResponseResult.succ(null);
     }
 
     @Override
-    public Result register(String username, String email, String password, String verify) {
+    public ResponseResult register(String username, String email, String password, String verify) {
         LambdaQueryWrapper<User> queryWrapper=new LambdaQueryWrapper<>();
         queryWrapper.eq(User::getEmail,email).select(User::getId).last("limit 1");
         User user=userDao.selectOne(queryWrapper);
         //has registered
         if(user!=null){
-            return Result.fail(100,"user has already registered");
+            return ResponseResult.fail(100,"user has already registered");
         }
         //check verification code
         String redisVerify=redisTemplate.opsForValue().get(verifyPrefix+email);//redisVerify可能为null
         if(!verify.equals(redisVerify)){
-            return Result.fail(101,"wrong verification code");
+            return ResponseResult.fail(101,"wrong verification code");
         }
         //add new user
         String dbPassword=DigestUtils.md5Hex(password+salt);
@@ -133,7 +132,7 @@ public class AuthServiceImpl implements AuthService {
         redisTemplate.opsForValue().set(redisToken, JSON.toJSONString(user),1, TimeUnit.DAYS);
         //delete verify in redis
         redisTemplate.delete(verifyPrefix+email);
-        return Result.succ(new LoginRetVo(token,user.getUsername()));
+        return ResponseResult.succ(new LoginRetVo(token,user.getUsername()));
     }
 
     @Override

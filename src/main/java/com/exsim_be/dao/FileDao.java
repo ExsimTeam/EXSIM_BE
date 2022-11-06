@@ -89,9 +89,9 @@ public interface FileDao extends BaseMapper<File> {
 
     @Select("SELECT f.id,f.file_name,f.created_time,f.last_modify_time,f.create_author_id as authorUserId,u.username as authorUsername,f.property " +
             "from file f,file_permission fp,user u " +
-            "where f.id=fp.file_id and fp.user_id=u.id " +
+            "where f.id=fp.file_id and fp.user_id=#{uid} and u.id=f.create_author_id "+
             "order by f.last_modify_time desc ")
-    List<FileRetVo> getFileListPage(Page page);
+    List<FileRetVo> getFileListPage(long uid);
 
 }
 

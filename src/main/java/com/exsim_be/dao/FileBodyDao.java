@@ -34,7 +34,7 @@ public class FileBodyDao {
 
     public void saveCell(long fileId,int sheetId,Object cellJson, long row, long col){
         String collectionName="F"+fileId;
-        Query query=new Query(Criteria.where("row").is(row).and("sheet").is(sheetId));
+        Query query=new Query(Criteria.where("row").is(row).and("sheetId").is(sheetId));
         Update update=new Update().set(Long.toString(col), cellJson);
         mongoTemplate.upsert(query,update,collectionName);
     }
@@ -43,7 +43,7 @@ public class FileBodyDao {
     public List<Object> queryCell(long fileId,int sheetId,int page){
         String collectionName="F"+fileId;
         int startIndex=(page-1)*pageSize;
-        Query query=new Query(Criteria.where("row").gt(startIndex).lt(startIndex+pageSize).and("sheet").is(sheetId));
+        Query query=new Query(Criteria.where("row").gt(startIndex).lt(startIndex+pageSize).and("sheetId").is(sheetId));
         List<Object> jsonObjects = mongoTemplate.find(query, Object.class, collectionName);
         return jsonObjects;
     }
@@ -72,7 +72,7 @@ public class FileBodyDao {
         Query query=new Query(Criteria.where("info").is(1));
         Update update=new Update();
         update.inc("sheetNum",1);
-        update.set("sheet",fileInfo.getSheets());
+        update.set("sheets",fileInfo.getSheets());
         update.inc("sheetPtr",1);
         mongoTemplate.upsert(query,update,collectionName);
         return sheetId;
@@ -86,12 +86,16 @@ public class FileBodyDao {
         query=new Query(Criteria.where("info").is(1));
         Update update=new Update();
         update.inc("sheetNum",-1);
-        update.set("sheet",fileInfo.getSheets());
+        update.set("sheets",fileInfo.getSheets());
         mongoTemplate.upsert(query,update,collectionName);
 
     }
 
     public void alterSheetName(long fileId, int sheetID, String sheetName) {
-
+        String collectionName="F"+fileId;
+        Query query=new Query(Criteria.where("info").is(1));
+        Update update=new Update();
+        update.set("sheets."+sheetID,sheetName);
+        mongoTemplate.updateFirst(query,update,collectionName);
     }
 }

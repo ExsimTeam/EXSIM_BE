@@ -1,8 +1,8 @@
 package com.exsim_be.endpoint;
 
 import com.alibaba.fastjson.JSON;
-import com.exsim_be.dao.FileBodyDao;
-import com.exsim_be.service.ThreadService;
+
+import com.exsim_be.service.WebsocketService;
 import com.exsim_be.vo.enumVo.GlobalCodeEnum;
 import com.exsim_be.vo.returnVo.FileInfoVo;
 import com.exsim_be.vo.websocketVo.AlterSheetNameParam;
@@ -10,13 +10,13 @@ import com.exsim_be.vo.websocketVo.CellVo;
 import com.exsim_be.vo.FilePermissionVo;
 import com.exsim_be.vo.websocketVo.MessageVo;
 import com.exsim_be.vo.websocketVo.ReceiveMessageVo;
-import io.netty.handler.codec.MessageAggregationException;
-import io.netty.handler.ssl.OpenSslCertificateCompressionAlgorithm;
+
 import lombok.extern.slf4j.Slf4j;
-import org.bson.json.JsonObject;
+
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.redis.core.RedisTemplate;
+
 import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Controller;
 
 import javax.websocket.*;
 import javax.websocket.server.ServerEndpoint;
@@ -31,23 +31,27 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 @Slf4j
 @Component
+@Controller
 @ServerEndpoint("/edit")
 public class EditEndPoint {
-    @Autowired
-    RedisTemplate<String,String> redisTemplate;
+
 
     private static final Map<Long,Set<Session>> fileSessions=new ConcurrentHashMap<>();
 
     private FilePermissionVo filePermissionVo;
     private Set<Session> sessionSet;
 
-    @Autowired
-    ThreadService threadService;
 
-    @Autowired
-    FileBodyDao fileBodyDao;
 
     private FileInfoVo fileInfo;
+
+
+    private static WebsocketService websocketService;
+
+    @Autowired
+    public void setWebsocketService(WebsocketService websocketService) {
+        EditEndPoint.websocketService = websocketService;
+    }
 
 
     @OnOpen()
@@ -55,7 +59,7 @@ public class EditEndPoint {
 
         Map<String, List<String>> requestParameterMap = session.getRequestParameterMap();
         String utoken=requestParameterMap.get("utoken").get(0);
-        String filePermissonVoJson=redisTemplate.opsForValue().get("UTOKEN:"+utoken);
+        String filePermissonVoJson= websocketService.getFilePermissionVoJSON(utoken);
         if(filePermissonVoJson==null){
             sendError(session, GlobalCodeEnum.UNAUTHORIZED.getCode(), GlobalCodeEnum.UNAUTHORIZED.getMsg());
             return;
@@ -64,7 +68,7 @@ public class EditEndPoint {
         fileSessions.putIfAbsent(filePermissionVo.getFileId(), new HashSet<>());
         sessionSet=fileSessions.get(filePermissionVo.getFileId());
         sessionSet.add(session);
-        fileInfo=fileBodyDao.getFileInfo(filePermissionVo.getFileId());
+        fileInfo=websocketService.getFileInfo(filePermissionVo.getFileId());
         session.getAsyncRemote().sendText(JSON.toJSONString(MessageVo.succ(-1,null)));
     }
 
@@ -108,9 +112,14 @@ public class EditEndPoint {
             }
             messageVo=MessageVo.succ(opcode,receiveMessageVo.getData());
             //store in mongoDB
-            threadService.storeInDB(filePermissionVo.getFileId(),cellVo);
+            websocketService.storeInDB(filePermissionVo.getFileId(),cellVo);
+
         }else if(opcode==1){//add sheet
-            messageVo=MessageVo.succ(opcode,fileBodyDao.addSheet(filePermissionVo.getFileId(),receiveMessageVo.getData(),fileInfo));
+            messageVo=MessageVo.succ(opcode
+                    ,websocketService
+                            .addSheet(filePermissionVo.getFileId()
+                                    ,receiveMessageVo.getData()
+                                    ,fileInfo));
         }else if(opcode==2){//deleteSheet
             messageVo=MessageVo.succ(opcode,receiveMessageVo.getData());
             int sheetId;
@@ -120,7 +129,7 @@ public class EditEndPoint {
                 sendError(session,GlobalCodeEnum.BAD_REQUEST.getCode(), GlobalCodeEnum.BAD_REQUEST.getMsg());
                 return;
             }
-            threadService.deleteSheet(filePermissionVo.getFileId(),sheetId,fileInfo);
+            websocketService.deleteSheet(filePermissionVo.getFileId(),sheetId,fileInfo);
         }else if(opcode==3){//alter sheet name
             AlterSheetNameParam alterSheetNameParam=JSON.parseObject(receiveMessageVo.getData(),AlterSheetNameParam.class);
             if(alterSheetNameParam==null){
@@ -128,14 +137,16 @@ public class EditEndPoint {
                 return;
             }
             messageVo=MessageVo.succ(opcode,receiveMessageVo.getData());
-            //alter info in mongodb
-            threadService.alterSheetName(filePermissionVo.getFileId(), alterSheetNameParam);
             Map<Integer, String> sheets = fileInfo.getSheets();
             if(!sheets.containsKey(alterSheetNameParam.getSheetID())){
                 sendError(session,GlobalCodeEnum.BAD_REQUEST.getCode(), GlobalCodeEnum.BAD_REQUEST.getMsg());
                 return;
             }
+
             sheets.put(alterSheetNameParam.getSheetID(), alterSheetNameParam.getSheetName());
+            //alter info in mongodb
+            websocketService.alterSheetName(filePermissionVo.getFileId(), alterSheetNameParam);
+
         }
         else {
             sendError(session,GlobalCodeEnum.BAD_REQUEST.getCode(), GlobalCodeEnum.BAD_REQUEST.getMsg());

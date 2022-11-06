@@ -14,7 +14,7 @@ public class FormatCheck {
 
     private static final String REG_MAIL = "^[a-zA-Z0-9_!#$%&’*+/=?`{|}~^.-]+@[a-zA-Z0-9.-]+$";
 
-    private static final String REG_USERNAME="/^[a-zA-Z0-9_\\u4e00-\\u9fa5]{1,20}$/";
+    private static final String REG_USERNAME="^[a-zA-Z0-9_\\u4e00-\\u9fa5]{1,20}$";
 
     public static boolean checkMail(String email) {
         if (StringUtils.isBlank(email)) {
