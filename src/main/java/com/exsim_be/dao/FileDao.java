@@ -76,7 +76,7 @@ public interface FileDao extends BaseMapper<File> {
      * @param file 实例对象
      * @return 影响行数
      */
-    int update(File file);
+   // int update(File file);
 
     /**
      * 通过主键删除数据

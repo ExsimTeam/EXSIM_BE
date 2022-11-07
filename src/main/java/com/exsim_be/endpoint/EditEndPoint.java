@@ -32,7 +32,7 @@ import java.util.concurrent.ConcurrentHashMap;
 @Slf4j
 @Component
 @Controller
-@ServerEndpoint("/edit")
+@ServerEndpoint("/api/edit")
 public class EditEndPoint {
 
 
@@ -67,9 +67,17 @@ public class EditEndPoint {
         this.filePermissionVo= JSON.parseObject(filePermissonVoJson,FilePermissionVo.class);
         fileSessions.putIfAbsent(filePermissionVo.getFileId(), new HashSet<>());
         sessionSet=fileSessions.get(filePermissionVo.getFileId());
+        //notify others someone is coming
+        //send messsage
+        for(Session partner:sessionSet){
+            if(partner!=session) {
+                partner.getAsyncRemote().sendText(JSON.toJSONString(MessageVo.succ(4,null,filePermissionVo.getUsername())));
+            }
+        }
+        //
         sessionSet.add(session);
         fileInfo=websocketService.getFileInfo(filePermissionVo.getFileId());
-        session.getAsyncRemote().sendText(JSON.toJSONString(MessageVo.succ(-1,null)));
+        session.getAsyncRemote().sendText(JSON.toJSONString(MessageVo.succ(-1,null,null)));
     }
 
     @OnClose
@@ -110,7 +118,7 @@ public class EditEndPoint {
                 sendError(session, GlobalCodeEnum.BAD_REQUEST.getCode(), GlobalCodeEnum.BAD_REQUEST.getMsg());
                 return;
             }
-            messageVo=MessageVo.succ(opcode,receiveMessageVo.getData());
+            messageVo=MessageVo.succ(opcode,receiveMessageVo.getData(), filePermissionVo.getUsername());
             //store in mongoDB
             websocketService.storeInDB(filePermissionVo.getFileId(),cellVo);
 
@@ -119,9 +127,9 @@ public class EditEndPoint {
                     ,websocketService
                             .addSheet(filePermissionVo.getFileId()
                                     ,receiveMessageVo.getData()
-                                    ,fileInfo));
+                                    ,fileInfo), filePermissionVo.getUsername());
         }else if(opcode==2){//deleteSheet
-            messageVo=MessageVo.succ(opcode,receiveMessageVo.getData());
+            messageVo=MessageVo.succ(opcode,receiveMessageVo.getData(), filePermissionVo.getUsername());
             int sheetId;
             try {
                 sheetId = Integer.parseInt(receiveMessageVo.getData());
@@ -136,7 +144,7 @@ public class EditEndPoint {
                 sendError(session,GlobalCodeEnum.BAD_REQUEST.getCode(), GlobalCodeEnum.BAD_REQUEST.getMsg());
                 return;
             }
-            messageVo=MessageVo.succ(opcode,receiveMessageVo.getData());
+            messageVo=MessageVo.succ(opcode,receiveMessageVo.getData(), filePermissionVo.getUsername());
             Map<Integer, String> sheets = fileInfo.getSheets();
             if(!sheets.containsKey(alterSheetNameParam.getSheetID())){
                 sendError(session,GlobalCodeEnum.BAD_REQUEST.getCode(), GlobalCodeEnum.BAD_REQUEST.getMsg());
@@ -159,7 +167,7 @@ public class EditEndPoint {
                 partner.getAsyncRemote().sendText(JSON.toJSONString(messageVo));
             }
         }
-        session.getAsyncRemote().sendText(JSON.toJSONString(MessageVo.succ(-1,null)));
+        session.getAsyncRemote().sendText(JSON.toJSONString(MessageVo.succ(-1,null,null)));
     }
 
     @OnError

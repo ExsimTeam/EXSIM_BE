@@ -1,11 +1,10 @@
 package com.exsim_be.vo.websocketVo;
 
-import com.exsim_be.service.MailService;
+
 import com.exsim_be.vo.enumVo.GlobalCodeEnum;
 import lombok.Data;
 
-import java.io.PipedReader;
-import java.util.Date;
+
 
 /**
  * @author 贾楠
@@ -19,22 +18,26 @@ public class MessageVo {
     private int opcode;
     private Object data;
 
-    public MessageVo(int code, String msg, int opcode, Object data) {
+    private String sender;
+
+    public MessageVo(int code, String msg, int opcode, Object data,String sender) {
         this.code = code;
         this.msg = msg;
         this.opcode = opcode;
         this.data = data;
+        this.sender=sender;
+
     }
 
     public MessageVo() {
     }
 
 
-    public static MessageVo succ(int opcode,Object data){
-        return new MessageVo(GlobalCodeEnum.SUCCESS.getCode(), GlobalCodeEnum.SUCCESS.getMsg(), opcode,data);
+    public static MessageVo succ(int opcode,Object data,String sender){
+        return new MessageVo(GlobalCodeEnum.SUCCESS.getCode(), GlobalCodeEnum.SUCCESS.getMsg(), opcode,data,sender);
     }
 
     public static MessageVo fail(int code,String msg){
-        return new MessageVo(code,msg,-1,null);
+        return new MessageVo(code,msg,-1,null,null);
     }
 }

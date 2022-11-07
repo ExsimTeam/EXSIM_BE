@@ -1,6 +1,7 @@
 package com.exsim_be.service.impl;
 
 import com.alibaba.fastjson.JSON;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.exsim_be.dao.FileBodyDao;
@@ -114,6 +115,9 @@ public class FileServiceImpl extends ServiceImpl<FileDao, File> implements FileS
     public String openFile(FilePermissionVo filePermissionVo) {
         String utoken= UUID.randomUUID().toString();
         redisTemplate.opsForValue().set("UTOKEN:"+utoken, JSON.toJSONString(filePermissionVo),3, TimeUnit.MINUTES);
+        LambdaUpdateWrapper<File> updateWrapper=new LambdaUpdateWrapper<>();
+        updateWrapper.eq(File::getId,filePermissionVo.getFileId()).set(File::getLastModifyTime,new Date());
+        fileDao.update(null,updateWrapper);
         return utoken;
     }
 

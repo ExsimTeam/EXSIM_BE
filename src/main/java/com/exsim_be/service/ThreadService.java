@@ -33,12 +33,15 @@ public class ThreadService {
         CellValVo cellValVo=new CellValVo(cellVo.getValue(), cellVo.getFormat());
         fileBodyDao.saveCell(fileId,cellVo.getSheetId(), cellValVo, cellVo.getRow(), cellVo.getCol());
     }
-
+    @Async("taskExecutor")
     public void deleteSheet(long fileId, int sheetId, FileInfoVo fileInfo) {
         fileBodyDao.deleteSheet(fileId,sheetId,fileInfo);
     }
 
+
+    @Async("taskExecutor")
     public void alterSheetName(long fileId,AlterSheetNameParam alterSheetNameParam) {
         fileBodyDao.alterSheetName(fileId,alterSheetNameParam.getSheetID(),alterSheetNameParam.getSheetName());
     }
+
 }
