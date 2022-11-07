@@ -17,4 +17,6 @@ public interface UserService {
 
     User getUserByEmail(String shareToEmail);
 
+    String getUsernameById(long userId);
+
 }

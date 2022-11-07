@@ -102,16 +102,19 @@ public class FileController {
         }else {
             filePermissionVo =new FilePermissionVo(user.getId(), user.getUsername(),fileId, filePermission.getPermission());
         }
-        String utoken=fileService.openFile(filePermissionVo);
         FileInfoVo fileInfoVo=fileBodyDao.getFileInfo(fileId);
-        return ResponseEntity.ok(Result.succ(new openFileRetVo(utoken,fileInfoVo)));
+        OpenFileRetVo openFileRetVo=new OpenFileRetVo(fileInfoVo);
+        fileService.addOpenFileInfo(openFileRetVo,fileId);
+        String utoken=fileService.openFile(filePermissionVo);
+        openFileRetVo.setUtoken(utoken);
+        return ResponseEntity.ok(Result.succ(openFileRetVo));
     }
 
 
     @GetMapping("/getFileBody")
-    ResponseEntity<Result> getFileBody(@RequestParam("fileId")Long fileId
-            ,@RequestParam("page") Integer page
-    ,@RequestParam("sheetId")int sheetId){
+    ResponseEntity<Result> getFileBody(@RequestParam("fileId")Long fileId,
+                                       @RequestParam("page") Integer page,
+                                       @RequestParam("sheetId")int sheetId){
         if(fileId==null||page==null){
             return ResponseEntity.badRequest().body(null);
         }

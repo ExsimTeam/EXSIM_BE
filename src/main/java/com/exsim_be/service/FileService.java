@@ -9,6 +9,7 @@ import com.exsim_be.vo.paramVo.NewFileParam;
 import com.exsim_be.vo.returnVo.FileListVo;
 import com.exsim_be.vo.returnVo.GetFileBodyRetVo;
 import com.exsim_be.vo.returnVo.Result;
+import com.exsim_be.vo.returnVo.OpenFileRetVo;
 
 /**
  * (File)表服务接口
@@ -34,4 +35,6 @@ public interface FileService extends IService<File> {
     String openFile(FilePermissionVo filePermissionVo);
 
     GetFileBodyRetVo getFileBody(long fileId,int sheetId, int page);
+
+    void addOpenFileInfo(OpenFileRetVo openFileRetVo, long fileId);
 }

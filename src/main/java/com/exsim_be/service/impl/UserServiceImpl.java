@@ -29,4 +29,11 @@ public class UserServiceImpl implements UserService {
                 .eq(User::getEmail,shareToEmail).last("limit 1");
         return userDao.selectOne(queryWrapper);
     }
+
+    @Override
+    public String getUsernameById(long userId) {
+        LambdaQueryWrapper<User> queryWrapper=new LambdaQueryWrapper<>();
+        queryWrapper.eq(User::getId,userId).select(User::getUsername,User::getId);
+        return userDao.selectOne(queryWrapper).getUsername();
+    }
 }

@@ -1,8 +1,8 @@
 package com.exsim_be.service.impl;
 
 import com.alibaba.fastjson.JSON;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.exsim_be.dao.FileBodyDao;
 import com.exsim_be.dao.FileDao;
@@ -125,5 +125,15 @@ public class FileServiceImpl extends ServiceImpl<FileDao, File> implements FileS
     public GetFileBodyRetVo getFileBody(long fileId,int sheetId, int page) {
         List<Object> objects = fileBodyDao.queryCell(fileId, sheetId, page);
         return new GetFileBodyRetVo(objects);
+    }
+
+    @Override
+    public void addOpenFileInfo(OpenFileRetVo openFileRetVo, long fileId) {
+        LambdaQueryWrapper<File> queryWrapper=new LambdaQueryWrapper<>();
+        queryWrapper.eq(File::getId,fileId).select(File::getFileName,File::getLastModifyTime,File::getId,File::getCreateAuthorId);
+        File file = fileDao.selectOne(queryWrapper);
+        openFileRetVo.setFileName(file.getFileName());
+        openFileRetVo.setLastModify(file.getLastModifyTime());
+        openFileRetVo.setAuthor(userService.getUsernameById(file.getCreateAuthorId()));
     }
 }
