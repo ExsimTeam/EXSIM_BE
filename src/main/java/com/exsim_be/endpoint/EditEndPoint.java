@@ -23,6 +23,8 @@ import javax.websocket.server.ServerEndpoint;
 import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.CopyOnWriteArraySet;
 
 /**
  * @author 贾楠
@@ -36,10 +38,10 @@ import java.util.concurrent.ConcurrentHashMap;
 public class EditEndPoint {
 
 
-    private static final Map<Long,Set<Session>> fileSessions=new ConcurrentHashMap<>();
+    private static final Map<Long, CopyOnWriteArraySet<Session>> fileSessions=new ConcurrentHashMap<>();
 
     private FilePermissionVo filePermissionVo;
-    private Set<Session> sessionSet;
+    private CopyOnWriteArraySet<Session> sessionSet;
 
 
 
@@ -55,7 +57,9 @@ public class EditEndPoint {
 
 
     @OnOpen()
-    public void onOpen(Session session){
+    public void onOpen(Session session) throws IOException{
+        session.setMaxTextMessageBufferSize(10*1024*1024);
+        session.setMaxBinaryMessageBufferSize(10*1024*1024);
 
         Map<String, List<String>> requestParameterMap = session.getRequestParameterMap();
         String utoken=requestParameterMap.get("utoken").get(0);
@@ -65,23 +69,25 @@ public class EditEndPoint {
             return;
         }
         this.filePermissionVo= JSON.parseObject(filePermissonVoJson,FilePermissionVo.class);
-        fileSessions.putIfAbsent(filePermissionVo.getFileId(), new HashSet<>());
+        fileSessions.putIfAbsent(filePermissionVo.getFileId(), new CopyOnWriteArraySet<>());
         sessionSet=fileSessions.get(filePermissionVo.getFileId());
         //notify others someone is coming
         //send messsage
         for(Session partner:sessionSet){
             if(partner!=session) {
-                partner.getAsyncRemote().sendText(JSON.toJSONString(MessageVo.succ(4,null,filePermissionVo.getUsername())));
+                synchronized (partner) {
+                    partner.getBasicRemote().sendText(JSON.toJSONString(MessageVo.succ(4, null, filePermissionVo.getUsername())));
+                }
             }
         }
         //
         sessionSet.add(session);
         fileInfo=websocketService.getFileInfo(filePermissionVo.getFileId());
-        session.getAsyncRemote().sendText(JSON.toJSONString(MessageVo.succ(-1,null,null)));
+        session.getBasicRemote().sendText(JSON.toJSONString(MessageVo.succ(-1,null,null)));
     }
 
     @OnClose
-    public void onClose(Session session){
+    public void onClose(Session session) throws IOException{
         try {
             //关闭WebSocket下的该Seesion会话
             session.close();
@@ -89,6 +95,7 @@ public class EditEndPoint {
             if(sessionSet.size()==0){
                 fileSessions.remove(filePermissionVo.getFileId());
             }
+            log.info("断联");
         } catch (IOException e) {
             e.printStackTrace();
             log.error("onClose error",e);
@@ -96,10 +103,9 @@ public class EditEndPoint {
     }
 
     @OnMessage
-    public void onMessage(Session session,String message){
+    public void onMessage(Session session,String message) throws IOException{
         //check permisson
         if(filePermissionVo.getPermission()==0){
-            sendError(session, GlobalCodeEnum.UNAUTHORIZED.getCode(), GlobalCodeEnum.UNAUTHORIZED.getMsg());
             return;
         }
         ReceiveMessageVo receiveMessageVo= JSON.parseObject(message,ReceiveMessageVo.class);
@@ -110,8 +116,10 @@ public class EditEndPoint {
         }
         int opcode= receiveMessageVo.getOpcode();
         MessageVo messageVo;
-
-        if(opcode==0) {//update cell
+        if(opcode==-1){
+            session.getBasicRemote().sendText(JSON.toJSONString(MessageVo.succ(-1,null,null)));
+            return;
+        }else if(opcode==0) {//update cell
             //check cell
             CellVo cellVo = JSON.parseObject(receiveMessageVo.getData(), CellVo.class);
             if (cellVo == null) {
@@ -155,8 +163,9 @@ public class EditEndPoint {
             //alter info in mongodb
             websocketService.alterSheetName(filePermissionVo.getFileId(), alterSheetNameParam);
 
-        }
-        else {
+        }else if(opcode==5){
+            messageVo=MessageVo.succ(5,receiveMessageVo.getData(), filePermissionVo.getUsername());
+        } else {
             sendError(session,GlobalCodeEnum.BAD_REQUEST.getCode(), GlobalCodeEnum.BAD_REQUEST.getMsg());
             return;
         }
@@ -164,10 +173,12 @@ public class EditEndPoint {
         //send messsage
         for(Session partner:sessionSet){
             if(partner!=session) {
-                partner.getAsyncRemote().sendText(JSON.toJSONString(messageVo));
+                synchronized (partner) {
+                    partner.getBasicRemote().sendText(JSON.toJSONString(messageVo));
+                }
             }
         }
-        session.getAsyncRemote().sendText(JSON.toJSONString(MessageVo.succ(-1,null,null)));
+        session.getBasicRemote().sendText(JSON.toJSONString(MessageVo.succ(-1,null,null)));
     }
 
     @OnError
@@ -182,8 +193,8 @@ public class EditEndPoint {
         log.info("Throwable msg " + throwable.getMessage());
     }
 
-    private void sendError(Session session,int code,String message){
+    private void sendError(Session session,int code,String message) throws IOException{
         MessageVo messageVo=MessageVo.fail(code,message);
-        session.getAsyncRemote().sendText(JSON.toJSONString(messageVo));
+        session.getBasicRemote().sendText(JSON.toJSONString(messageVo));
     }
 }
