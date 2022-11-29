@@ -23,7 +23,8 @@ public class WebConfig implements WebMvcConfigurer {
 
     @Override
     public void addCorsMappings(CorsRegistry registry) {
-        String origin="http://localhost:"+port;//跨域配置
+        //跨域配置
+        String origin="https://exsim.idyh.xyz";
         registry.addMapping("/**").allowedOrigins(origin);
     }
 
